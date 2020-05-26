@@ -53,6 +53,7 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   Future<List<Todo>> todos;
+  List<Todo> tododata;
 
   _MyHomePageState() {
     this.todos = APICalls.getTodos();
@@ -68,8 +69,63 @@ class _MyHomePageState extends State<MyHomePage> {
         ),
         body: FutureBuilder<List<Todo>>(
             builder: (ctx, snapshot) {
-              return Text(snapshot.data[0].title);
+              if (snapshot.hasData) {
+                if (tododata == null) {
+                  tododata = snapshot.data;
+                }
+                List<Widget> todoWidgets =
+                    tododata.map((todo) => getTodoContainer(todo)).toList();
+                todoWidgets.insert(
+                    0,
+                    Container(
+                      child: Text("Todo:",
+                          style: TextStyle(
+                              fontSize: 30, fontWeight: FontWeight.bold)),
+                      height: 50,
+                    ));
+                return ListView(
+                  children: [Column(children: todoWidgets)],
+                );
+              }
+              return CircularProgressIndicator();
             },
             future: todos));
+  }
+
+  Container getTodoContainer(Todo todo) {
+    return Container(
+        padding: EdgeInsets.all(5),
+        decoration: BoxDecoration(
+            border:
+                Border(top: BorderSide(width: 1, style: BorderStyle.solid))),
+        child: Row(children: [
+          Text(todo.id.toString()),
+          Expanded(
+            child: FlatButton(
+              onPressed: () {
+                setState(() {
+                  var item =
+                      tododata.firstWhere((element) => element.id == todo.id);
+                  item.completed = !item.completed;
+                });
+              },
+              child: Text(
+                todo.title,
+                softWrap: true,
+              ),
+            ),
+          ),
+          IconButton(
+            onPressed: () {
+              setState(() {
+                tododata.removeWhere((element) => element.id == todo.id);
+              });
+            },
+            icon: Icon(Icons.delete_forever),
+          ),
+          todo.completed
+              ? Icon(Icons.check, color: Colors.green)
+              : Icon(Icons.clear, color: Colors.red)
+        ]));
   }
 }
