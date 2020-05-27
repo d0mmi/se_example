@@ -68,7 +68,10 @@ class _MyHomePageState extends State<MyHomePage> {
         ),
         body: FutureBuilder<List<Todo>>(
             builder: (ctx, snapshot) {
-              return Text(snapshot.data[0].title);
+              if (snapshot.hasData) {
+                return Text(snapshot.data[0].title);
+              }
+              return CircularProgressIndicator();
             },
             future: todos));
   }
